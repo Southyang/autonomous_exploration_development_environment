@@ -598,7 +598,7 @@ int main(int argc, char** argv)
   readPaths();
   #endif
   readPathList();
-  readCorrespondences();
+  readCorrespondences();  // 初始化运动原语和运动体素的关联状态
 
   printf ("\nInitialization complete.\n\n");
 
@@ -606,7 +606,7 @@ int main(int argc, char** argv)
   bool status = ros::ok();
   while (status) {
     ros::spinOnce();
-
+    // 有新的激光点云/占用点云，更改对应规划点云状态
     if (newLaserCloud || newTerrainCloud) {
       if (newLaserCloud) {
         newLaserCloud = false;
@@ -637,6 +637,7 @@ int main(int argc, char** argv)
 
       pcl::PointXYZI point;
       plannerCloudCrop->clear();
+      // 统计好规划点云、边界点云、障碍点云数量并更新点云状态
       int plannerCloudSize = plannerCloud->points.size();
       for (int i = 0; i < plannerCloudSize; i++) {
         float pointX1 = plannerCloud->points[i].x - vehicleX;
