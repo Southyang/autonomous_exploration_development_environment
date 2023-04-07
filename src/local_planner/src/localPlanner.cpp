@@ -637,7 +637,7 @@ int main(int argc, char** argv)
 
       pcl::PointXYZI point;
       plannerCloudCrop->clear();
-      // 统计好规划点云、边界点云、障碍点云数量并更新点云状态
+      // 对点云信息进行裁减并转换到车体坐标系
       int plannerCloudSize = plannerCloud->points.size();
       for (int i = 0; i < plannerCloudSize; i++) {
         float pointX1 = plannerCloud->points[i].x - vehicleX;
@@ -684,12 +684,12 @@ int main(int argc, char** argv)
           plannerCloudCrop->push_back(point);
         }
       }
-
+      // 计算与目标的距离，将目标点转换到base link
       float pathRange = adjacentRange;
       if (pathRangeBySpeed) pathRange = adjacentRange * joySpeed;
       if (pathRange < minPathRange) pathRange = minPathRange;
       float relativeGoalDis = adjacentRange;
-
+      
       if (autonomyMode) {
         float relativeGoalX = ((goalX - vehicleX) * cosVehicleYaw + (goalY - vehicleY) * sinVehicleYaw);
         float relativeGoalY = (-(goalX - vehicleX) * sinVehicleYaw + (goalY - vehicleY) * cosVehicleYaw);
@@ -708,7 +708,9 @@ int main(int argc, char** argv)
       if (pathScaleBySpeed) pathScale = defPathScale * joySpeed;
       if (pathScale < minPathScale) pathScale = minPathScale;
 
+      // 进入主要循环内容
       while (pathScale >= minPathScale && pathRange >= minPathRange) {
+        // 初始化
         for (int i = 0; i < 36 * pathNum; i++) {
           clearPathList[i] = 0;
           pathPenaltyList[i] = 0;
@@ -721,14 +723,16 @@ int main(int argc, char** argv)
         float minObsAngCCW = 180.0;
         float diameter = sqrt(vehicleLength / 2.0 * vehicleLength / 2.0 + vehicleWidth / 2.0 * vehicleWidth / 2.0);
         float angOffset = atan2(vehicleWidth, vehicleLength) * 180.0 / PI;
+        // 通过点云信息判断是否存在障碍物
         int plannerCloudCropSize = plannerCloudCrop->points.size();
         for (int i = 0; i < plannerCloudCropSize; i++) {
           float x = plannerCloudCrop->points[i].x / pathScale;
           float y = plannerCloudCrop->points[i].y / pathScale;
           float h = plannerCloudCrop->points[i].intensity;
           float dis = sqrt(x * x + y * y);
-
-          if (dis < pathRange / pathScale && (dis <= (relativeGoalDis + goalClearRange) / pathScale || !pathCropByGoal) && checkObstacle) {
+          // 判断点云是否有用（距离是否满足）
+          if (dis < Rangpathe / pathScale && (dis <= (relativeGoalDis + goalClearRange) / pathScale || !pathCropByGoal) && checkObstacle) {
+            // 对有用的点云进行处理，判断可用路径
             for (int rotDir = 0; rotDir < 36; rotDir++) {
               float rotAng = (10.0 * rotDir - 180.0) * PI / 180;
               float angDiff = fabs(joyDir - (10.0 * rotDir - 180.0));
@@ -742,7 +746,7 @@ int main(int argc, char** argv)
 
               float x2 = cos(rotAng) * x + sin(rotAng) * y;
               float y2 = -sin(rotAng) * x + cos(rotAng) * y;
-
+              // 车体转向
               float scaleY = x2 / gridVoxelOffsetX + searchRadius / gridVoxelOffsetY 
                              * (gridVoxelOffsetX - x2) / gridVoxelOffsetX;
 
@@ -763,7 +767,7 @@ int main(int argc, char** argv)
               }
             }
           }
-
+          // 根据点云位置进行左右转向
           if (dis < diameter / pathScale && (fabs(x) > vehicleLength / pathScale / 2.0 || fabs(y) > vehicleWidth / pathScale / 2.0) && 
               (h > obstacleHeightThre || !useTerrainAnalysis) && checkRotObstacle) {
             float angObs = atan2(y, x) * 180.0 / PI;
@@ -779,7 +783,7 @@ int main(int argc, char** argv)
 
         if (minObsAngCW > 0) minObsAngCW = 0;
         if (minObsAngCCW < 0) minObsAngCCW = 0;
-
+        // 计算路径分数
         for (int i = 0; i < 36 * pathNum; i++) {
           int rotDir = int(i / pathNum);
           float angDiff = fabs(joyDir - (10.0 * rotDir - 180.0));
@@ -812,7 +816,7 @@ int main(int argc, char** argv)
             }
           }
         }
-
+        // 根据分数筛选最优路径
         float maxScore = 0;
         int selectedGroupID = -1;
         for (int i = 0; i < 36 * groupNum; i++) {
@@ -834,6 +838,7 @@ int main(int argc, char** argv)
           selectedGroupID = selectedGroupID % groupNum;
           int selectedPathLength = startPaths[selectedGroupID]->points.size();
           path.poses.resize(selectedPathLength);
+          // 根据startpaths组成最终路径
           for (int i = 0; i < selectedPathLength; i++) {
             float x = startPaths[selectedGroupID]->points[i].x;
             float y = startPaths[selectedGroupID]->points[i].y;
@@ -887,7 +892,7 @@ int main(int argc, char** argv)
                   point.y = pathScale * (sin(rotAng) * x + cos(rotAng) * y);
                   point.z = pathScale * z;
                   point.intensity = 1.0;
-
+                  // 记录所有不存在障碍的路径
                   freePaths->push_back(point);
                 }
               }
@@ -916,6 +921,7 @@ int main(int argc, char** argv)
       }
       pathScale = defPathScale;
 
+      // 根据找到的路径指导运动
       if (!pathFound) {
         path.poses.resize(1);
         path.poses[0].pose.position.x = 0;
