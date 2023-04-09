@@ -33,47 +33,48 @@ const double PI = 3.1415926;
 
 #define PLOTPATHSET 1
 
-string pathFolder;
-double vehicleLength = 0.6;
-double vehicleWidth = 0.6;
-double sensorOffsetX = 0;
-double sensorOffsetY = 0;
-bool twoWayDrive = true;
-double laserVoxelSize = 0.05;
-double terrainVoxelSize = 0.2;
-bool useTerrainAnalysis = false;
-bool checkObstacle = true;
+string pathFolder; 				         //   使用matlab生成路径集合的文件路径
+double vehicleLength = 0.6;		     //  	车辆的长度，单位m
+double vehicleWidth = 0.6;	       //   车辆的宽度，单位m
+double sensorOffsetX = 0;		       //		传感器坐标系与车体中心的偏移量
+double sensorOffsetY = 0;		       //		传感器坐标系与车体中心的偏移量
+bool twoWayDrive = true;		       //   双向驱动
+double laserVoxelSize = 0.05;      //   下采样体素栅格叶大小
+double terrainVoxelSize = 0.2;     //   下采样体素栅格叶大小
+bool useTerrainAnalysis = false;   //   是否使用地面分割后的点云信息
+bool checkObstacle = true;          
 bool checkRotObstacle = false;
-double adjacentRange = 3.5;
-double obstacleHeightThre = 0.2;
-double groundHeightThre = 0.1;
-double costHeightThre = 0.1;
-double costScore = 0.02;
-bool useCost = false;
-const int laserCloudStackNum = 1;
-int laserCloudCount = 0;
-int pointPerPathThre = 2;
-double minRelZ = -0.5;
-double maxRelZ = 0.25;
-double maxSpeed = 1.0;
-double dirWeight = 0.02;
-double dirThre = 90.0;
-bool dirToVehicle = false;
-double pathScale = 1.0;
-double minPathScale = 0.75;
-double pathScaleStep = 0.25;
-bool pathScaleBySpeed = true;
-double minPathRange = 1.0;
-double pathRangeStep = 0.5;
-bool pathRangeBySpeed = true;
-bool pathCropByGoal = true;
+double adjacentRange = 3.5;		     // 	裁剪点云时的距离
+double obstacleHeightThre = 0.2;   //   障碍物高度阈值
+double groundHeightThre = 0.1;	   //   地面高度阈值
+
+double costHeightThre = 0.1;	     //		计算路径惩罚得分的权重
+double costScore = 0.02;		       // 	最小惩罚得分
+bool useCost = false;	
+const int laserCloudStackNum = 1;	 //   缓存的激光点云帧数量
+int laserCloudCount = 0;			     //   当laserCloudStackNum = 1时,暂时没用到
+int pointPerPathThre = 2;			     //   每条路径需要有几个被遮挡的点
+double minRelZ = - 0.5;				     // 	未使用地面分割时，裁剪点云时的最小高度
+double maxRelZ = 0.25;				     // 	未使用地面分割时，裁剪点云时的最大高度
+double maxSpeed = 1.0;				     // 	最大速度
+double dirWeight = 0.02;			     // 	计算得分时转向角度的权重
+double dirThre = 90.0;				     // 	最大转向角度
+bool dirToVehicle = false;			   //   是否以车辆为主方向计算被遮挡的路径
+double pathScale = 1.0;				     // 	路径尺度
+double minPathScale = 0.75;			   // 	最小路径尺度
+double pathScaleStep = 0.25;		   // 	路径尺度的调整步长
+bool pathScaleBySpeed = true;		   // 	是否根据速度调整路径尺度
+double minPathRange = 1.0;			   // 	最小路径距离
+double pathRangeStep = 0.5;			   // 	路径范围的调整步长
+bool pathRangeBySpeed = true;		   // 	是否根据速度调整路径的范围
+bool pathCropByGoal = true;		     // 	是否根据目标点+ goalClearRange 筛选点云数据
 bool autonomyMode = false;
 double autonomySpeed = 1.0;
 double joyToSpeedDelay = 2.0;
 double joyToCheckObstacleDelay = 5.0;
-double goalClearRange = 0.5;
-double goalX = 0;
-double goalY = 0;
+double goalClearRange = 0.5;	     // 	当 pathCropByGoal = true 时,点云距离超过目标点+该值则不被处理
+double goalX = 0;   				       //   局部路径目标点
+double goalY = 0;  					       //   局部路径目标点
 
 float joySpeed = 0;
 float joySpeedRaw = 0;
