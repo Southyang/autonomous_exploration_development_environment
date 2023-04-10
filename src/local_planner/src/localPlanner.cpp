@@ -34,10 +34,10 @@ const double PI = 3.1415926;
 #define PLOTPATHSET 1
 
 string pathFolder; 				         //   使用matlab生成路径集合的文件路径
-double vehicleLength = 0.6;		     //  	车辆的长度，单位m
-double vehicleWidth = 0.6;	       //   车辆的宽度，单位m
-double sensorOffsetX = 0;		       //		传感器坐标系与车体中心的偏移量
-double sensorOffsetY = 0;		       //		传感器坐标系与车体中心的偏移量
+double vehicleLength = 0.98;		   //  	车辆的长度，单位m                1     
+double vehicleWidth = 0.66;	       //   车辆的宽度，单位m                1
+double sensorOffsetX = 0.068;		   //		传感器坐标系与车体中心的偏移量    1
+double sensorOffsetY = 0.06;		   //		传感器坐标系与车体中心的偏移量    1
 bool twoWayDrive = true;		       //   双向驱动
 double laserVoxelSize = 0.05;      //   下采样体素栅格叶大小
 double terrainVoxelSize = 0.2;     //   下采样体素栅格叶大小
@@ -60,9 +60,9 @@ double maxSpeed = 1.0;				     // 	最大速度
 double dirWeight = 0.02;			     // 	计算得分时转向角度的权重
 double dirThre = 90.0;				     // 	最大转向角度
 bool dirToVehicle = false;			   //   是否以车辆为主方向计算被遮挡的路径
-double pathScale = 1.0;				     // 	路径尺度
-double minPathScale = 0.75;			   // 	最小路径尺度
-double pathScaleStep = 0.25;		   // 	路径尺度的调整步长
+double pathScale = 1.3;				     // 	路径尺度                             1
+double minPathScale = 0.9;			   // 	最小路径尺度                         1
+double pathScaleStep = 0.4;		     // 	路径尺度的调整步长                   1
 bool pathScaleBySpeed = true;		   // 	是否根据速度调整路径尺度
 double minPathRange = 1.0;			   // 	最小路径距离
 double pathRangeStep = 0.5;			   // 	路径范围的调整步长
